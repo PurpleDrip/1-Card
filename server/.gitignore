@@ -1,0 +1,35 @@
+# Node modules
+/node_modules/
+
+# Log files
+*.log
+
+# Environment files
+.env
+
+# npm package lock file (optional, depending on preference)
+package-lock.json
+
+# Debug files
+/.vscode/
+
+# Build output
+/dist/
+/build/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE specific files (e.g., JetBrains, VSCode)
+.idea/
+.vscode/
+
+# Coverage output (for testing tools)
+coverage/
+
+# Optional, for TypeScript users:
+*.tsbuildinfo
+
+# Optional, for temporary files
+*.swp
