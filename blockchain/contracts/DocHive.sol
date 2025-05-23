@@ -2,50 +2,50 @@
 pragma solidity ^0.8.24;
 
 import "../types/structDeclaration.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract DocHive {
-
+contract DocHive is ReentrancyGuard {
     struct UserData {
         IndianOfficialDocs indianOfficialDocs;
         GeneralData generalData;
         string publicKey;
         statusType status;
     }
-    // Events for transparency and off-chain monitoring
-    event UserRegistered(address indexed userWallet, string ocId,statusType status);
-    event DocumentAdded(string indexed ocId, DocType docType);
-    event DocumentRemoved(string indexed ocId, DocType docType);
-    event UserStatusChanged(string indexed ocId, statusType oldStatus, statusType newStatus);
+
+    event UserRegistered(address indexed userWallet, string docId, statusType status);
+    event DocumentAdded(string indexed docId, DocType docType);
+    event DocumentRemoved(string indexed docId, DocType docType);
+    event UserStatusChanged(string indexed docId, statusType oldStatus, statusType newStatus);
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     address payable public owner;
-    mapping(address => string) public userIdStore; // user wallet -> ocID
-    mapping(string => UserData) public userDataStore; // ocID -> user data
-    mapping(string => address) public ocIdToWallet; // ocID -> wallet 
-    
-    string[] public registeredUsers;
-    uint256 public totalUsers;
+    mapping(address => string) public userIdStore;
+    mapping(string => UserData) public userDataStore;
+    mapping(string => address) public docIdToWallet;
 
-    constructor() {
-        owner = payable(msg.sender);
-    }
+    mapping(string => bool) private isUserRegistered;
+    uint256 public totalUsers;
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the owner");
         _;
     }
 
-    modifier registeredUser(string memory ocId) {
-        require(userDataStore[ocId].status == statusType.ACTIVE, "No active account found for this Id");
+    modifier registeredUser(string memory docId) {
+        require(userDataStore[docId].status == statusType.ACTIVE, "User is not active");
         _;
     }
 
-    modifier onlyUserOrOwner(string memory ocId) {
+    modifier onlyUserOrOwner(string memory docId) {
         require(
-            msg.sender == owner || msg.sender == ocIdToWallet[ocId],
-            "Not authorized to access this user's data"
+            msg.sender == owner || msg.sender == docIdToWallet[docId],
+            "Not authorized"
         );
         _;
+    }
+
+    constructor() {
+        owner = payable(msg.sender);
     }
 
     function transferOwnership(address newOwner) public onlyOwner {
@@ -58,173 +58,151 @@ contract DocHive {
         return totalUsers;
     }
 
-    function getUserByIndex(uint256 index) public view onlyOwner returns (string memory) {
-        require(index < totalUsers, "Index out of bounds");
-        return registeredUsers[index];
-    }
-
     function isWalletRegistered(address userWallet) public view returns (bool) {
         return bytes(userIdStore[userWallet]).length > 0;
     }
 
-    function isOcIdRegistered(string memory ocId) public view returns (bool) {
-        return userDataStore[ocId].status == statusType.ACTIVE;
+    function isDocIdRegistered(string memory docId) public view returns (bool) {
+        return isUserRegistered[docId];
     }
 
     function registerUser(
-        address userWallet, 
-        string memory ocId, 
+        address userWallet,
+        string memory docId,
         string memory publicKey,
         statusType initialStatus
-    ) public onlyOwner {
-        require(userWallet != address(0), "Invalid wallet address");
-        require(bytes(ocId).length > 0, "OcId cannot be empty");
-        require(bytes(publicKey).length > 0, "Public key cannot be empty");
-        require(!isWalletRegistered(userWallet), "User already registered");
-        require(!isOcIdRegistered(ocId), "OcId already exists");
+    ) public onlyOwner nonReentrant {
+        require(userWallet != address(0), "Invalid wallet");
+        require(bytes(docId).length > 0, "Document ID required");
+        require(bytes(publicKey).length > 0, "Public key required");
+        require(!isWalletRegistered(userWallet), "Wallet already registered");
+        require(!isDocIdRegistered(docId), "Document ID already exists");
 
-        userIdStore[userWallet] = ocId;
-        ocIdToWallet[ocId] = userWallet;
-        userDataStore[ocId].publicKey = publicKey;
-        userDataStore[ocId].status = initialStatus;
-        
-        registeredUsers.push(ocId);
+        userIdStore[userWallet] = docId;
+        docIdToWallet[docId] = userWallet;
+        userDataStore[docId].publicKey = publicKey;
+        userDataStore[docId].status = initialStatus;
+
+        isUserRegistered[docId] = true;
         totalUsers++;
 
-        emit UserRegistered(userWallet, ocId, initialStatus);
+        emit UserRegistered(userWallet, docId, initialStatus);
     }
 
-    function addDocument(
-        string memory ocId,
-        DocType docType
-    ) public onlyOwner registeredUser(ocId) {
-        UserData storage userData = userDataStore[ocId];
-        
-        if (docType == DocType.AADHAR) {
-            require(!userData.indianOfficialDocs.hasAadhar, "Aadhar already exists");
-            userData.indianOfficialDocs.hasAadhar = true;
-        } else if (docType == DocType.PASSPORT) {
-            require(!userData.indianOfficialDocs.hasPassport, "Passport already exists");
-            userData.indianOfficialDocs.hasPassport = true;
-        } else if (docType == DocType.VOTER) {
-            require(!userData.indianOfficialDocs.hasVoter, "Voter ID already exists");
-            userData.indianOfficialDocs.hasVoter = true;
-        } else if (docType == DocType.PANCARD) {
-            require(!userData.indianOfficialDocs.hasPancard, "PAN card already exists");
-            userData.indianOfficialDocs.hasPancard = true;
-        } else if (docType == DocType.RATION) {
-            require(!userData.indianOfficialDocs.hasRation, "Ration card already exists");
-            userData.indianOfficialDocs.hasRation = true;
-        } else if (docType == DocType.DRIVING_LICENSE) {
-            require(!userData.indianOfficialDocs.hasDrivingLicense, "Driving license already exists");
-            userData.indianOfficialDocs.hasDrivingLicense = true;
-        }
-
-        emit DocumentAdded(ocId, docType);
+    function _updateDocumentState(
+        IndianOfficialDocs storage docs,
+        DocType docType,
+        bool value
+    ) internal {
+        if (docType == DocType.AADHAR) docs.hasAadhar = value;
+        else if (docType == DocType.PASSPORT) docs.hasPassport = value;
+        else if (docType == DocType.VOTER) docs.hasVoter = value;
+        else if (docType == DocType.PANCARD) docs.hasPancard = value;
+        else if (docType == DocType.RATION) docs.hasRation = value;
+        else if (docType == DocType.DRIVING_LICENSE) docs.hasDrivingLicense = value;
     }
 
-    function removeDocument(
-        string memory ocId,
-        DocType docType
-    ) public onlyOwner registeredUser(ocId) {
-        UserData storage userData = userDataStore[ocId];
-        
-        if (docType == DocType.AADHAR) {
-            require(userData.indianOfficialDocs.hasAadhar, "Aadhar doesn't exist");
-            userData.indianOfficialDocs.hasAadhar = false;
-        } else if (docType == DocType.PASSPORT) {
-            require(userData.indianOfficialDocs.hasPassport, "Passport doesn't exist");
-            userData.indianOfficialDocs.hasPassport = false;
-        } else if (docType == DocType.VOTER) {
-            require(userData.indianOfficialDocs.hasVoter, "Voter ID doesn't exist");
-            userData.indianOfficialDocs.hasVoter = false;
-        } else if (docType == DocType.PANCARD) {
-            require(userData.indianOfficialDocs.hasPancard, "PAN card doesn't exist");
-            userData.indianOfficialDocs.hasPancard = false;
-        } else if (docType == DocType.RATION) {
-            require(userData.indianOfficialDocs.hasRation, "Ration card doesn't exist");
-            userData.indianOfficialDocs.hasRation = false;
-        } else if (docType == DocType.DRIVING_LICENSE) {
-            require(userData.indianOfficialDocs.hasDrivingLicense, "Driving license doesn't exist");
-            userData.indianOfficialDocs.hasDrivingLicense = false;
-        }
-
-        emit DocumentRemoved(ocId, docType);
-    }
-
-    // // Batch add multiple documents
-    // function addMultipleDocuments(
-    //     string memory ocId,
-    //     DocType[] memory docTypes
-    // ) public onlyOwner registeredUser(ocId) {
-    //     for (uint256 i = 0; i < docTypes.length; i++) {
-    //         addDocument(ocId, docTypes[i]);
-    //     }
-    // }
-
-    function getMyData() public view returns (
-        IndianOfficialDocs memory,
-        GeneralData memory,
-        string memory,
-        statusType
-    ) {
-        string memory ocId = userIdStore[msg.sender];
-        require(bytes(ocId).length > 0, "User not registered");
-        return getUserData(ocId);
-    }
-
-    function getUserData(string memory ocId) public view onlyUserOrOwner(ocId) returns (
-        IndianOfficialDocs memory,
-        GeneralData memory,
-        string memory,
-        statusType
-    ) {
-        require(isOcIdRegistered(ocId), "User not found");
-        return (
-            userDataStore[ocId].indianOfficialDocs,
-            userDataStore[ocId].generalData,
-            userDataStore[ocId].publicKey,
-            userDataStore[ocId].status
-        );
-    }
-
-    function hasDocument(string memory ocId, DocType docType) public view onlyUserOrOwner(ocId) returns (bool) {
-        UserData memory userData = userDataStore[ocId];
-        
-        if (docType == DocType.AADHAR) return userData.indianOfficialDocs.hasAadhar;
-        if (docType == DocType.PASSPORT) return userData.indianOfficialDocs.hasPassport;
-        if (docType == DocType.VOTER) return userData.indianOfficialDocs.hasVoter;
-        if (docType == DocType.PANCARD) return userData.indianOfficialDocs.hasPancard;
-        if (docType == DocType.RATION) return userData.indianOfficialDocs.hasRation;
-        if (docType == DocType.DRIVING_LICENSE) return userData.indianOfficialDocs.hasDrivingLicense;
-        
+    function _hasDocument(IndianOfficialDocs memory docs, DocType docType) internal pure returns (bool) {
+        if (docType == DocType.AADHAR) return docs.hasAadhar;
+        if (docType == DocType.PASSPORT) return docs.hasPassport;
+        if (docType == DocType.VOTER) return docs.hasVoter;
+        if (docType == DocType.PANCARD) return docs.hasPancard;
+        if (docType == DocType.RATION) return docs.hasRation;
+        if (docType == DocType.DRIVING_LICENSE) return docs.hasDrivingLicense;
         return false;
     }
 
-    function changeUserStatus(string memory ocId, statusType newStatus) public onlyOwner {
-        require(isOcIdRegistered(ocId), "User not found");
-        statusType oldStatus = userDataStore[ocId].status;
-        require(oldStatus != newStatus, "Status is already set to this value");
-        
-        userDataStore[ocId].status = newStatus;
-        emit UserStatusChanged(ocId, oldStatus, newStatus);
+    function addDocument(string memory docId, DocType docType)
+        public
+        onlyOwner
+        registeredUser(docId)
+    {
+        IndianOfficialDocs storage docs = userDataStore[docId].indianOfficialDocs;
+        require(!_hasDocument(docs, docType), "Document already exists");
+        _updateDocumentState(docs, docType, true);
+
+        emit DocumentAdded(docId, docType);
     }
 
-    function activateUser(string memory ocId) public onlyOwner {
-        changeUserStatus(ocId, statusType.ACTIVE);
+    function removeDocument(string memory docId, DocType docType)
+        public
+        onlyOwner
+        registeredUser(docId)
+    {
+        IndianOfficialDocs storage docs = userDataStore[docId].indianOfficialDocs;
+        require(_hasDocument(docs, docType), "Document does not exist");
+        _updateDocumentState(docs, docType, false);
+
+        emit DocumentRemoved(docId, docType);
     }
 
-    // Block user (convenience function)
-    function blockUser(string memory ocId) public onlyOwner {
-        changeUserStatus(ocId, statusType.BLOCKED);
+    function getMyData()
+        public
+        view
+        returns (
+            IndianOfficialDocs memory,
+            GeneralData memory,
+            string memory,
+            statusType
+        )
+    {
+        string memory docId = userIdStore[msg.sender];
+        require(bytes(docId).length > 0, "User not registered");
+        return getUserData(docId);
     }
 
-    // Set user to pending (convenience function)
-    function setPendingUser(string memory ocId) public onlyOwner {
-        changeUserStatus(ocId, statusType.PENDING);
+    function getUserData(string memory docId)
+        public
+        view
+        onlyUserOrOwner(docId)
+        returns (
+            IndianOfficialDocs memory,
+            GeneralData memory,
+            string memory,
+            statusType
+        )
+    {
+        require(isDocIdRegistered(docId), "User not found");
+        UserData storage data = userDataStore[docId];
+        return (data.indianOfficialDocs, data.generalData, data.publicKey, data.status);
     }
 
-    function getWalletFromOcId(string memory ocId) public view onlyOwner returns (address) {
-        return ocIdToWallet[ocId];
+    function hasDocument(string memory docId, DocType docType)
+        public
+        view
+        onlyUserOrOwner(docId)
+        returns (bool)
+    {
+        return _hasDocument(userDataStore[docId].indianOfficialDocs, docType);
+    }
+
+    function changeUserStatus(string memory docId, statusType newStatus) public onlyOwner {
+        require(isDocIdRegistered(docId), "User not found");
+        statusType oldStatus = userDataStore[docId].status;
+        require(oldStatus != newStatus, "Already in desired status");
+
+        userDataStore[docId].status = newStatus;
+        emit UserStatusChanged(docId, oldStatus, newStatus);
+    }
+
+    function activateUser(string memory docId) public onlyOwner {
+        changeUserStatus(docId, statusType.ACTIVE);
+    }
+
+    function blockUser(string memory docId) public onlyOwner {
+        changeUserStatus(docId, statusType.BLOCKED);
+    }
+
+    function setPendingUser(string memory docId) public onlyOwner {
+        changeUserStatus(docId, statusType.PENDING);
+    }
+
+    function getWalletFromDocId(string memory docId)
+        public
+        view
+        onlyOwner
+        returns (address)
+    {
+        return docIdToWallet[docId];
     }
 }
