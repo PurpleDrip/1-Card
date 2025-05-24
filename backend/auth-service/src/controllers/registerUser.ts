@@ -1,0 +1,39 @@
+import { NextFunction, Request, Response } from "express";
+import User from "../model/User";
+import { generateNCid } from "../utils/generateNCid";
+import { encryptPassword } from "../utils/encryptedPassword";
+
+export const registerUser=async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
+    const { walletPublicAddress, password } = req.body;
+
+    try{
+        const user=await User.findOne({ walletPublicAddress });
+
+        if(user){
+            res.status(400).json({ error: "User already exists" });
+            return;
+        }
+
+        const NCid=generateNCid(walletPublicAddress);
+        const encryptedPassword = await encryptPassword(password); // Assuming you have a function to encrypt the password
+
+        const newUser=await User.create({
+            walletPublicAddress,
+            password:encryptedPassword,
+            NCid
+        });
+
+        res.locals.cookieData=newUser;
+
+        next();
+
+        res.status(201).json({
+            message: "User registered successfully",
+        });
+
+    }catch(err){
+        console.error(err);
+        res.status(500).json({ error: "Internal server error" });
+        return;
+    }
+}
