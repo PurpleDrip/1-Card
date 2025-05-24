@@ -1,208 +1,109 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "../types/structDeclaration.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract DocHive is ReentrancyGuard {
-    struct UserData {
-        IndianOfficialDocs indianOfficialDocs;
-        GeneralData generalData;
-        string publicKey;
-        statusType status;
+contract DocHive is Ownable {
+    enum DocType { AADHAR, PASSPORT, VOTER, PANCARD, RATION, DRIVING_LICENSE }
+    enum Status { PENDING, ACTIVE, BLOCKED }
+
+    struct Documents {
+        uint8 bitmask; 
     }
 
-    event UserRegistered(address indexed userWallet, string docId, statusType status);
-    event DocumentAdded(string indexed docId, DocType docType);
-    event DocumentRemoved(string indexed docId, DocType docType);
-    event UserStatusChanged(string indexed docId, statusType oldStatus, statusType newStatus);
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    struct User {
+        Documents docs;
+        bytes32 pubKeyHash;
+        Status status;
+    }
 
-    address payable public owner;
-    mapping(address => string) public userIdStore;
-    mapping(string => UserData) public userDataStore;
-    mapping(string => address) public docIdToWallet;
+    mapping(bytes32 => User) public users; // userId -> User
+    mapping(address => bytes32) public walletToUserId; // wallet -> userId
+    mapping(bytes32 => address) public userIdToWallet; // userId -> wallet
 
-    mapping(string => bool) private isUserRegistered;
-    uint256 public totalUsers;
+    event UserRegistered(bytes32 indexed userId, address wallet, Status status);
+    event DocumentAdded(bytes32 indexed userId, DocType docType);
+    event DocumentRemoved(bytes32 indexed userId, DocType docType);
+    event StatusChanged(bytes32 indexed userId, Status oldStatus, Status newStatus);
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not the owner");
+    modifier onlyActiveUser(bytes32 userId) {
+        require(users[userId].status == Status.ACTIVE, "User not active");
         _;
     }
 
-    modifier registeredUser(string memory docId) {
-        require(userDataStore[docId].status == statusType.ACTIVE, "User is not active");
+    modifier onlyUserOrOwner(bytes32 userId) {
+        require(msg.sender == owner() || msg.sender == userIdToWallet[userId], "Not authorized");
         _;
     }
 
-    modifier onlyUserOrOwner(string memory docId) {
-        require(
-            msg.sender == owner || msg.sender == docIdToWallet[docId],
-            "Not authorized"
-        );
-        _;
-    }
-
-    constructor() {
-        owner = payable(msg.sender);
-    }
-
-    function transferOwnership(address newOwner) public onlyOwner {
-        require(newOwner != address(0), "New owner cannot be zero address");
-        emit OwnershipTransferred(owner, newOwner);
-        owner = payable(newOwner);
-    }
-
-    function getUserCount() public view returns (uint256) {
-        return totalUsers;
-    }
-
-    function isWalletRegistered(address userWallet) public view returns (bool) {
-        return bytes(userIdStore[userWallet]).length > 0;
-    }
-
-    function isDocIdRegistered(string memory docId) public view returns (bool) {
-        return isUserRegistered[docId];
-    }
-
-    function registerUser(
-        address userWallet,
-        string memory docId,
-        string memory publicKey,
-        statusType initialStatus
-    ) public onlyOwner nonReentrant {
+    function registerUser(address userWallet, bytes32 userId, bytes32 pubKeyHash, Status initialStatus) external onlyOwner {
         require(userWallet != address(0), "Invalid wallet");
-        require(bytes(docId).length > 0, "Document ID required");
-        require(bytes(publicKey).length > 0, "Public key required");
-        require(!isWalletRegistered(userWallet), "Wallet already registered");
-        require(!isDocIdRegistered(docId), "Document ID already exists");
+        require(userId != bytes32(0), "Invalid userId");
+        require(walletToUserId[userWallet] == bytes32(0), "Wallet already registered");
+        require(users[userId].status == Status(uint8(3)), "User already exists");
 
-        userIdStore[userWallet] = docId;
-        docIdToWallet[docId] = userWallet;
-        userDataStore[docId].publicKey = publicKey;
-        userDataStore[docId].status = initialStatus;
+        users[userId] = User({ docs: Documents(0), pubKeyHash: pubKeyHash, status: initialStatus });
+        walletToUserId[userWallet] = userId;
+        userIdToWallet[userId] = userWallet;
 
-        isUserRegistered[docId] = true;
-        totalUsers++;
-
-        emit UserRegistered(userWallet, docId, initialStatus);
+        emit UserRegistered(userId, userWallet, initialStatus);
     }
 
-    function _updateDocumentState(
-        IndianOfficialDocs storage docs,
-        DocType docType,
-        bool value
-    ) internal {
-        if (docType == DocType.AADHAR) docs.hasAadhar = value;
-        else if (docType == DocType.PASSPORT) docs.hasPassport = value;
-        else if (docType == DocType.VOTER) docs.hasVoter = value;
-        else if (docType == DocType.PANCARD) docs.hasPancard = value;
-        else if (docType == DocType.RATION) docs.hasRation = value;
-        else if (docType == DocType.DRIVING_LICENSE) docs.hasDrivingLicense = value;
+    function _setDocumentBit(Documents storage docs, DocType docType, bool value) internal {
+        uint8 bit = uint8(1) << uint8(docType);
+        if (value) {
+            docs.bitmask |= bit;
+        } else {
+            docs.bitmask &= ~bit;
+        }
     }
 
-    function _hasDocument(IndianOfficialDocs memory docs, DocType docType) internal pure returns (bool) {
-        if (docType == DocType.AADHAR) return docs.hasAadhar;
-        if (docType == DocType.PASSPORT) return docs.hasPassport;
-        if (docType == DocType.VOTER) return docs.hasVoter;
-        if (docType == DocType.PANCARD) return docs.hasPancard;
-        if (docType == DocType.RATION) return docs.hasRation;
-        if (docType == DocType.DRIVING_LICENSE) return docs.hasDrivingLicense;
-        return false;
+    function _hasDocument(Documents storage docs, DocType docType) internal view returns (bool) {
+        return (docs.bitmask & (uint8(1) << uint8(docType))) != 0;
     }
 
-    function addDocument(string memory docId, DocType docType)
-        public
-        onlyOwner
-        registeredUser(docId)
-    {
-        IndianOfficialDocs storage docs = userDataStore[docId].indianOfficialDocs;
-        require(!_hasDocument(docs, docType), "Document already exists");
-        _updateDocumentState(docs, docType, true);
-
-        emit DocumentAdded(docId, docType);
+    function addDocument(bytes32 userId, DocType docType) external onlyOwner onlyActiveUser(userId) {
+        require(!_hasDocument(users[userId].docs, docType), "Document already added");
+        _setDocumentBit(users[userId].docs, docType, true);
+        emit DocumentAdded(userId, docType);
     }
 
-    function removeDocument(string memory docId, DocType docType)
-        public
-        onlyOwner
-        registeredUser(docId)
-    {
-        IndianOfficialDocs storage docs = userDataStore[docId].indianOfficialDocs;
-        require(_hasDocument(docs, docType), "Document does not exist");
-        _updateDocumentState(docs, docType, false);
-
-        emit DocumentRemoved(docId, docType);
+    function removeDocument(bytes32 userId, DocType docType) external onlyOwner onlyActiveUser(userId) {
+        require(_hasDocument(users[userId].docs, docType), "Document not present");
+        _setDocumentBit(users[userId].docs, docType, false);
+        emit DocumentRemoved(userId, docType);
     }
 
-    function getMyData()
-        public
-        view
-        returns (
-            IndianOfficialDocs memory,
-            GeneralData memory,
-            string memory,
-            statusType
-        )
-    {
-        string memory docId = userIdStore[msg.sender];
-        require(bytes(docId).length > 0, "User not registered");
-        return getUserData(docId);
+    function batchAddDocuments(bytes32 userId, DocType[] calldata docTypes) external onlyOwner onlyActiveUser(userId) {
+        for (uint i = 0; i < docTypes.length; i++) {
+            if (!_hasDocument(users[userId].docs, docTypes[i])) {
+                _setDocumentBit(users[userId].docs, docTypes[i], true);
+                emit DocumentAdded(userId, docTypes[i]);
+            }
+        }
     }
 
-    function getUserData(string memory docId)
-        public
-        view
-        onlyUserOrOwner(docId)
-        returns (
-            IndianOfficialDocs memory,
-            GeneralData memory,
-            string memory,
-            statusType
-        )
-    {
-        require(isDocIdRegistered(docId), "User not found");
-        UserData storage data = userDataStore[docId];
-        return (data.indianOfficialDocs, data.generalData, data.publicKey, data.status);
+    function getUserData(bytes32 userId) external view onlyUserOrOwner(userId) returns (uint8, bytes32, Status) {
+        User memory u = users[userId];
+        return (u.docs.bitmask, u.pubKeyHash, u.status);
     }
 
-    function hasDocument(string memory docId, DocType docType)
-        public
-        view
-        onlyUserOrOwner(docId)
-        returns (bool)
-    {
-        return _hasDocument(userDataStore[docId].indianOfficialDocs, docType);
+    function hasDocument(bytes32 userId, DocType docType) external view onlyUserOrOwner(userId) returns (bool) {
+        return _hasDocument(users[userId].docs, docType);
     }
 
-    function changeUserStatus(string memory docId, statusType newStatus) public onlyOwner {
-        require(isDocIdRegistered(docId), "User not found");
-        statusType oldStatus = userDataStore[docId].status;
-        require(oldStatus != newStatus, "Already in desired status");
-
-        userDataStore[docId].status = newStatus;
-        emit UserStatusChanged(docId, oldStatus, newStatus);
+    function changeStatus(bytes32 userId, Status newStatus) public onlyOwner {
+        Status oldStatus = users[userId].status;
+        require(oldStatus != newStatus, "No status change");
+        users[userId].status = newStatus;
+        emit StatusChanged(userId, oldStatus, newStatus);
     }
 
-    function activateUser(string memory docId) public onlyOwner {
-        changeUserStatus(docId, statusType.ACTIVE);
+    function getWalletFromUserId(bytes32 userId) public view onlyOwner returns (address) {
+        return userIdToWallet[userId];
     }
 
-    function blockUser(string memory docId) public onlyOwner {
-        changeUserStatus(docId, statusType.BLOCKED);
-    }
-
-    function setPendingUser(string memory docId) public onlyOwner {
-        changeUserStatus(docId, statusType.PENDING);
-    }
-
-    function getWalletFromDocId(string memory docId)
-        public
-        view
-        onlyOwner
-        returns (address)
-    {
-        return docIdToWallet[docId];
+    function getUserIdFromWallet(address userWallet) public view returns (bytes32) {
+        return walletToUserId[userWallet];
     }
 }
