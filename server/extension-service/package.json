@@ -1,0 +1,22 @@
+{
+  "name": "extension-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.21",
+    "express": "^5.1.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  }
+}

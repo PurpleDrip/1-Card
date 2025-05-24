@@ -128,8 +128,8 @@ This project is licensed under the MIT License.
 
 ## Contact
 
-- Maintainer: Your Name  
-- Email: your.email@example.com  
+- Maintainer: Gurupreeth
+- Email: gurupreethnagesha@gmail.com
 - GitHub: [PurpleDrip](https://github.com/PurpleDrip)
 
 ---
