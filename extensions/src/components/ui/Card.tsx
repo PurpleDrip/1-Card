@@ -1,23 +1,15 @@
-export const Card = () => {
+import { Clipboard } from "lucide-react"
+
+const Card = () => {
   return (
-    <div className='relative w-4/5 bg-blue-200 p-4 rounded-xl flex items-center justify-center flex-col gap-4'>
-        <div className="px-4 flex items-center justify-between w-full">
-            <h1 className='text-2xl font-bold'>Username's Card</h1>
-            <h1 className="text-sm">Status</h1>
+    <div className="w-full p-4 border-rose-600">
+        <h1 className="text-[25px] raleway-md text-white">Your Unique Null Card ID</h1>
+        <div className="flex items-center max-w-max mx-auto px-4 py-2 rounded-xl mt-2 border-emerald-900 gap-3 text-center border">
+            <h2 className="text-center text-xl text-emerald-600">nc-5xfr-7gt5-ert4-dsx1-wee3...f09z</h2>
+            <Clipboard className="text-emerald-400" size={18}/>
         </div>
-        <div>
-            <h1 className='text-[2rem]'>1234-1234-1234-1234</h1>
-        </div>
-        <section className='flex items-center justify-between w-full px-8'>
-            <section className='flex flex-col gap-2'>
-                <h1 className='text-sm'>Card Holders Name</h1>
-                <h1 className='text-sm'>Something</h1>
-            </section>
-            <section>
-                <h1 className='text-sm'>Something</h1>
-                <h1 className='text-sm'>Something</h1>
-            </section>
-        </section>
     </div>
   )
 }
+
+export default Card

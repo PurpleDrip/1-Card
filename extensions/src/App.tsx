@@ -1,12 +1,15 @@
-import { Card } from "./components/ui/Card"
+import Card from "./components/ui/Card"
 import { VerifiedDoc } from "./components/ui/VerifiedDoc"
+import Header from "./components/ui/Header"
+import Footer from "./components/ui/Footer"
 
 const App = () => {
   return (
-    <div className="max-h-min w-screen flex items-center justify-center bg-red-700 flex-col gap-4 p-8">
-      <h1 className="text-3xl font-bold">Document Archieve</h1>
+    <div className="max-h-min w-[500px] flex items-center justify-center bg-zinc-900 flex-col gap-4 p-4">
+      <Header/>
       <Card/>
       <VerifiedDoc/>
+      <Footer/>
     </div>
   )
 }

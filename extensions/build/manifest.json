@@ -1,8 +1,12 @@
 {
     "manifest_version": 3,
-    "name": "1 Card",
+    "name": "Null Card",
     "version": "1.0.0",
-    "description": "A simple React app as a Chrome extension",
+    "description": "A web3 based KYC tools with total transparency.",
+    "icons": {
+        "48": "./null.png",
+        "128": "./null.png"
+    },
     "action": {
         "default_popup": "index.html"
     },
