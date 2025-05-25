@@ -16,7 +16,7 @@ const authSlice=createSlice({
             state.isRegistered=true;
         },
         logout(state){
-            state=initialState
+            state.isRegistered=false
         }
     }
 });

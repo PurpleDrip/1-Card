@@ -5,7 +5,7 @@ import Footer from "./components/ui/Footer"
 
 const App = () => {
   return (
-    <div className="max-h-min w-[500px] flex items-center justify-center bg-zinc-900 flex-col gap-4 p-4">
+    <div className="max-h-min w-[350px] flex items-center justify-center bg-zinc-900 flex-col gap-4 p-4">
       <Header/>
       <Card/>
       <VerifiedDoc/>

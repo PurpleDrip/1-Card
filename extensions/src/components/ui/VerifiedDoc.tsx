@@ -17,13 +17,13 @@ export const VerifiedDoc = () => {
   return (
     <>
       <h1 className="text-white text-[20px] underline underline-offset-8 raleway-md">Verified Docs</h1>
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-8 my-2 px-8">
+        <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-4 my-2">
         {verifiedDocs.map((doc) => (
           <div key={doc.id} className="flex flex-col items-center justify-center gap-1 w-[95px]">
-            <div className="p-2 rounded-full text-white border border-emerald-500 bg-emerald-700">
+            <div className="p-2 rounded text-white border border-emerald-500 bg-emerald-700">
               <ShieldUser size={24} />
             </div>
-            <h1 className="text-zinc-300 text-[16px] raleway-md">{doc.type}</h1>
+            <h1 className="text-zinc-300 text-[12px] raleway-md">{doc.type}</h1>
           </div>
         ))}
       </div>

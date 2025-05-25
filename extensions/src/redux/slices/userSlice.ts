@@ -19,7 +19,8 @@ const userSlice=createSlice({
             state.NCid=action.payload.NCid;
         },
         logout(state){
-            state=initialState
+            state.walletPublicAddress=null;
+            state.NCid=null;
         }
     }
 });
