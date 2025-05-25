@@ -1,9 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { Request, Response} from 'express';
-import { IUser } from '../model/User';
 
 export const appendCookie = (req: Request, res: Response): void => {
-    const cookieData = res.locals.cookieData ;
+    const cookieData = res.locals.user ;
 
     const token=jwt.sign({
         id:cookieData._id.toString(),

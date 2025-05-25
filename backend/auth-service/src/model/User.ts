@@ -1,6 +1,5 @@
 import mongoose, {Schema} from "mongoose";
 
-
 export interface IUser{
     walletPublicAddress: string;
     NCid: string;

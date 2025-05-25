@@ -15,7 +15,7 @@ export const registerUser=async (req:Request,res:Response,next:NextFunction):Pro
         }
 
         const NCid=generateNCid(walletPublicAddress);
-        const encryptedPassword = await encryptPassword(password); // Assuming you have a function to encrypt the password
+        const encryptedPassword = await encryptPassword(password); 
 
         const newUser=await User.create({
             walletPublicAddress,
@@ -23,7 +23,7 @@ export const registerUser=async (req:Request,res:Response,next:NextFunction):Pro
             NCid
         });
 
-        res.locals.cookieData=newUser;
+        res.locals.user=newUser;
 
         next();
 
