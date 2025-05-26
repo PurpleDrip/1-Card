@@ -1,12 +1,12 @@
 async function main() {
-  const DocHive=await ethers.getContractFactory("DocHive");
-  const docHive = await DocHive.deploy(); 
-  await docHive.waitForDeployment();
+  const NullCard=await ethers.getContractFactory("NullCard");
+  const nullCard = await NullCard.deploy(); 
+  await nullCard.waitForDeployment();
   
-  console.log("DocHive deployed to:", await docHive.getAddress());
+  console.log("DocHive deployed to:", await nullCard.getAddress());
   
   const signers = await ethers.getSigners();
-  console.log("DocHive deployed by:", signers[0].address);
+  console.log("NullCard deployed by:", signers[0].address);
 }
   
 main().catch((error) => {
