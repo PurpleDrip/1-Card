@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { registerInputSchema } from "../schemas/registerInputSchema";
+import { publicKeySchema, registerInputSchema } from "../schemas/registerInputSchema";
 
 export const validateRegisterInput=(req:Request,res:Response,next:NextFunction): void =>{
 
@@ -17,6 +17,13 @@ export const validateRegisterInput=(req:Request,res:Response,next:NextFunction):
         return;
     }
 
+    const publicKey=publicKeySchema.safeParse(req.body.publicKey);
+
+    if(!publicKey.success) {
+        res.status(400).json({ error: publicKey.error.errors.map(err => err.message).join(", ") });
+        return;
+    }
+    res.locals.publicKey = publicKey.data;
     req.body = validatedBody.data;
     next();
 }

@@ -7,8 +7,10 @@ export function generateNCid(walletPublicAddress: string): string {
     throw new Error("Invalid wallet address format");
   }
 
-  return createHash("sha256")
+  const hash=createHash("sha256")
     .update(walletPublicAddress.toLowerCase())
     .digest("hex")
     .slice(0, 32); 
+
+    return "0x" + hash; 
 }

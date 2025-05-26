@@ -13,5 +13,7 @@ export const registerInputSchema=z.object({
 })
 
 export const userSchema=z.object({
-        NCid: z.string().regex(/^[a-f0-9]{32}$/, 'Invalid NCid format'),
+        NCid: z.string().regex(/^0x[a-f0-9]{32}$/, 'Invalid NCid format'),
 }).merge(registerInputSchema);
+
+export const publicKeySchema=z.string().regex(/^04[a-f0-9]{128}$/,"Invalid public key format");

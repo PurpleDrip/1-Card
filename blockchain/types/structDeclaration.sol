@@ -12,3 +12,8 @@ struct NullCardData{
     string verifiedBy;
     Date verifiedAt;
 }
+
+struct PublicKey {
+    bytes32 X; 
+    bytes32 Y;     
+}
