@@ -1,5 +1,7 @@
 import z from 'zod';
 
+export const publicKeySchema=z.string().regex(/^04[a-f0-9]{128}$/,"Invalid public key format");
+
 export const registerInputSchema=z.object({
     walletPublicAddress: z.string().trim().toLowerCase().regex(/^0x[a-f0-9]{40}$/, 'Invalid wallet address format'),
     password:z
@@ -10,10 +12,9 @@ export const registerInputSchema=z.object({
     .regex(/[a-z]/, "Password must include at least one lowercase letter")
     .regex(/[0-9]/, "Password must include at least one digit")
     .regex(/[@$!%*?&]/, "Password must include at least one special character (@$!%*?&)"),
+    publicKey:publicKeySchema
 })
 
 export const userSchema=z.object({
         NCid: z.string().regex(/^0x[a-f0-9]{32}$/, 'Invalid NCid format'),
 }).merge(registerInputSchema);
-
-export const publicKeySchema=z.string().regex(/^04[a-f0-9]{128}$/,"Invalid public key format");

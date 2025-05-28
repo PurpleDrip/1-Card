@@ -10,7 +10,7 @@ export const registerUser=async (req:Request,res:Response,next:NextFunction):Pro
         const user=await User.findOne({ walletPublicAddress });
 
         if(user){
-            res.status(400).json({ error: "User already exists" });
+            res.status(400).json({ message: "User already exists with this wallet address" });
             return;
         }
 
@@ -29,7 +29,7 @@ export const registerUser=async (req:Request,res:Response,next:NextFunction):Pro
 
     }catch(err){
         console.error(err);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({ message: "Internal server error" });
         return;
     }
 }

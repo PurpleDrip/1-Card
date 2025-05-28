@@ -3,9 +3,9 @@ import { publicKeySchema, registerInputSchema } from "../schemas/registerInputSc
 
 export const validateRegisterInput=(req:Request,res:Response,next:NextFunction): void =>{
 
-    const { walletPublicAddress, password } = req.body;
+    const { walletPublicAddress, password,publicKey } = req.body;
 
-    if (!walletPublicAddress || !password) {
+    if (!walletPublicAddress || !password || !publicKey) {
         res.status(400).json({ error: "All fields are required" });
         return;
     }
@@ -17,13 +17,6 @@ export const validateRegisterInput=(req:Request,res:Response,next:NextFunction):
         return;
     }
 
-    const publicKey=publicKeySchema.safeParse(req.body.publicKey);
-
-    if(!publicKey.success) {
-        res.status(400).json({ error: publicKey.error.errors.map(err => err.message).join(", ") });
-        return;
-    }
-    res.locals.publicKey = publicKey.data;
     req.body = validatedBody.data;
     next();
 }

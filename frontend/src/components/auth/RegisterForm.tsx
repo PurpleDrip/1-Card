@@ -1,71 +1,39 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AuthLayout } from '@/components/auth-layout';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { connectWallet } from '@/lib/connectWallet';
-import { generateNCid } from '@/utils/generateVCid';
-import { registerUser, registerUserOnChain } from '@/api/auth/registerUser';
-import { generateKeyPair } from 'node:crypto';
-import { generateKeys } from '@/utils/generateKeys';
+import { registerUser } from '@/api/auth/registerUser';
+import generateKeys from '@/utils/generateKeys';
 
 export default function RegisterForm() {
-  const [showPrivateKey, setShowPrivateKey] = useState(false);
-  const [step, setStep] = useState<'idle' | 'charging' | 'key' | 'extension'>('idle');
-  const [walletConnected, setWalletConnected] = useState(false)
-
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const [address, setAddress] = useState('');
-  const [balance, setBalance] = useState('');
-
   const [privateKey, setPrivateKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleConnectWallet = async () => {
-    setIsLoading(true);
-    try {
-      const walletResult = await connectWallet();
-      if (!walletResult || !walletResult.address) {
-        throw new Error('Could not retrieve wallet info');
-      }
-      setAddress(walletResult.address);
-      setBalance(walletResult.balance);
-      toast({
-        title: 'Wallet Connected',
-        description: 'Your wallet has been connected successfully.',
-      });
-      setWalletConnected(true)
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: 'Wallet Connection Failed',
-        description: 'Please ensure MetaMask is installed and try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      throw new Error("MetaMask is not installed.");
     }
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No Ethereum accounts found.");
+    }
+    return accounts[0];
   };
 
-  const handleSubmit = async () => {
-
-    if(!walletConnected){
-      toast({
-        title:"Wallet not Linked",
-        description:"A Wallet is required to register.",
-        variant:"destructive"
-      })
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     if (password !== confirmPassword) {
       toast({
@@ -79,22 +47,26 @@ export default function RegisterForm() {
     setIsLoading(true);
 
     try {
+      const walletPublicAddress = await connectWallet();
+      setAddress(walletPublicAddress);
 
-      const OCid=generateNCid(address);
+      const { publicKey, privateKey } = generateKeys();
+      setPrivateKey(privateKey);
 
-      await registerUser(address,OCid,password);
-      const {publicKey,privateKey}=await generateKeys(address)
-      await registerUserOnChain(OCid,publicKey)
+      await registerUser(password, publicKey, walletPublicAddress);
 
       toast({
         title: 'Account Created',
-        description: 'MATIC charged. Private key generated successfully.',
+        description: 'MATIC charged. Save your private key securely.',
       });
-    } catch (err) {
-      console.error(err);
+
+      setShowKey(true); // Show private key UI
+    } catch (err: any) {
+      console.log('Registration error:', err);
+      const msg = err?.response?.data?.message || err.message || 'Something went wrong.';
       toast({
-        title: 'Transaction Failed',
-        description: 'Could not complete the registration process.',
+        title: 'Registration Failed',
+        description: msg,
         variant: 'destructive',
       });
     } finally {
@@ -102,46 +74,54 @@ export default function RegisterForm() {
     }
   };
 
+  const handleKeySaved = () => {
+    setShowKey(false);
+    router.push('/dashboard');
+  };
+
   return (
     <AuthLayout
       title="Create Your Null Card Account"
       description="Join us and take control of your digital identity."
     >
-      <form className="w-full space-y-6" onSubmit={(e) => e.preventDefault()}>
-        {step === 'idle' && (
+      {showKey ? (
+        <div className="space-y-4">
+          <Alert>
+            <AlertTitle>Private Key (Only shown once)</AlertTitle>
+            <AlertDescription className="break-words">
+              {privateKey}
+            </AlertDescription>
+          </Alert>
+          <Button onClick={handleKeySaved}>I've saved it safely</Button>
+        </div>
+      ) : (
+        <form className="w-full space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-6">
-            {/* Wallet Connection */}
-            <Button type="button" onClick={handleConnectWallet} disabled={isLoading || walletConnected}>
-              {walletConnected? "Wallet Connected" : isLoading ? 'Connecting...' : 'Connect Wallet'}
-            </Button>
             {address && (
               <p className="text-sm text-muted-foreground">Wallet Address: {address}</p>
             )}
 
             <Input
+              required
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
             />
             <Input
+              required
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm Password"
             />
 
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!address || isLoading}
-            >
+            <Button type="submit" disabled={isLoading}>
               {isLoading ? 'Registering...' : 'Create Account'}
             </Button>
           </div>
-        )}
-
-      </form>
+        </form>
+      )}
     </AuthLayout>
   );
 }
