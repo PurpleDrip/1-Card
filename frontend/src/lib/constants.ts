@@ -26,6 +26,7 @@ export const MOCK_ACTIVITIES: ActivityItem[] = [
 ];
 
 export const MOCK_VERIFICATION_COUNT = 72;
+export const MOCK_PLATFORM_USER_COUNT = 12583;
 
 export const DOCUMENT_TYPES: { label: string; value: DocumentInfo['type']; icon: LucideIcon }[] = [
     { label: 'Aadhar Card', value: 'Aadhar', icon: Fingerprint },

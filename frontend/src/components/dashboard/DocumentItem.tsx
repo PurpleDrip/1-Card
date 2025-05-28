@@ -35,7 +35,7 @@ export function DocumentItem({ document }: DocumentItemProps) {
           {document.issueDate && <p className="text-xs text-muted-foreground">Issued: {document.issueDate}</p>}
         </div>
       </div>
-      <Badge variant="outline" className={cn("capitalize text-xs", statusStyles[document.status])}>
+      <Badge variant="outline" className={cn("capitalize text-xs ml-1", statusStyles[document.status])}>
         <StatusIcon className="mr-1 h-3 w-3" />
         {document.status.replace('_', ' ')}
       </Badge>

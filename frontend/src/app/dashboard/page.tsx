@@ -7,6 +7,7 @@ import { RecentActivitiesCard } from '@/components/dashboard/RecentActivitiesCar
 import { VerificationCountCard } from '@/components/dashboard/VerificationCountCard';
 import { OverallStatusCard } from '@/components/dashboard/OverallStatusCard';
 import { SecuritySettingsCard } from '@/components/dashboard/SecuritySettingsCard';
+import { UserCountCard } from '@/components/dashboard/UserCountCard';
 
 const page = () => {
   return (
@@ -20,15 +21,16 @@ const page = () => {
             <AddedDocumentsCard />
           </div>
           {/* VerificationCountCard now takes the spot previously shared */}
-          <div className="lg:col-span-1 xl:col-span-2">
+          <div className="lg:col-span-1 xl:col-span-2 flex flex-col justify-between gap-4 md:py-4 xl:py-4"> 
              <VerificationCountCard />
+             <UserCountCard />
           </div>
 
           {/* Second Row */}
-          <div className="lg:col-span-2 xl:col-span-2"> {/* Spans 2 columns on lg, 2 on xl */}
+          <div className="lg:col-span-1 xl:col-span-1"> {/* Spans 2 columns on lg, 2 on xl */}
              <RecentActivitiesCard />
           </div>
-           <div className="lg:col-span-1 xl:col-span-1">
+           <div className="lg:col-span-2 xl:col-span-2">
             <ConsiderAddingCard />
           </div>
           <div className="lg:col-span-1 xl:col-span-1">

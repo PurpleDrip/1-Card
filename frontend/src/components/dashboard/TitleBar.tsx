@@ -11,7 +11,7 @@ const TitleBar = () => {
   }
   return (
     <>
-        <section className='md:h-[4rem] h-[2.5rem] rounded-full bg-emerald-950 border border-emerald-800 flex items-center justify-between md:px-2 px-1 mt-4'>
+        <section className='md:h-[4rem] h-[2.5rem] rounded-full bg-emerald-950 border border-emerald-800 flex items-center justify-between md:px-2 px-1 mt-4 mx-4'>
             <div className='flex gap-2 items-center'>
             <img src="/null.png" alt="Company Logo" className='md:h-[3rem] h-[2rem]'/>
 

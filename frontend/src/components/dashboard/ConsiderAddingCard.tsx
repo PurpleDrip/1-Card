@@ -44,7 +44,7 @@ export function ConsiderAddingCard() {
           <ScrollArea className="h-[180px] pr-3"> {/* Adjust height as needed */}
             <div className="space-y-2">
               {documentsToConsider.map((doc) => (
-                 <div key={doc.id} className="flex items-center justify-between p-3 hover:bg-secondary/50 rounded-md transition-colors">
+                 <div key={doc.id} className="flex items-center justify-between p-3 hover:bg-secondary/50 rounded-md transition-colors border">
                     <DocumentItem document={doc} />
                     <UploadDocumentDialog onDocumentAdd={handleDocumentAdd}>
                        <Button size="sm" variant="outline">Add</Button>
