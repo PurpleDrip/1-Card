@@ -5,7 +5,6 @@
 
 :root {
   --background-lighter:#27272a;
-
   --emerald-950:oklch(26.2% 0.051 172.552);
   --emerald-900:oklch(37.8% 0.077 168.94);
   --emerald-800:oklch(43.2% 0.095 166.913);
@@ -91,7 +90,7 @@
 .dark {
   --background:oklch(0.13 0.028 261.692);
   --foreground:oklch(0.985 0.002 247.839);
-  --card:oklch(0.21 0.034 264.665);
+  --card:black;
   --card-foreground:oklch(0.985 0.002 247.839);
   --popover:oklch(0.21 0.034 264.665);
   --popover-foreground:oklch(0.985 0.002 247.839);
@@ -104,7 +103,7 @@
   --accent:oklch(0.278 0.033 256.848);
   --accent-foreground:oklch(0.985 0.002 247.839);
   --destructive:oklch(0.704 0.191 22.216);
-  --border:oklch(1 0 0 / 10%);
+  --border:var(--emerald-900);
   --input:oklch(1 0 0 / 15%);
   --ring:oklch(0.551 0.027 264.364);
   --chart-1:oklch(0.488 0.243 264.376);
