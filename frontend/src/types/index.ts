@@ -5,7 +5,7 @@ export type DocumentStatus = 'verified' | 'pending' | 'rejected' | 'not_uploaded
 export interface DocumentInfo {
   id: string;
   name: string;
-  type: 'Aadhar' | 'Pancard' | 'Passport' | 'Ration' | 'Driving License' | 'USN' | 'Other';
+  type: 'Aadhar' | 'Pancard' | 'Passport' | 'Ration' | 'Driving License' | 'Voter' | 'Other';
   status: DocumentStatus;
   icon: LucideIcon;
   file?: File | null;

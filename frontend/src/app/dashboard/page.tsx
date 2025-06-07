@@ -10,6 +10,9 @@ import { SecuritySettingsCard } from '@/components/dashboard/SecuritySettingsCar
 import { UserCountCard } from '@/components/dashboard/UserCountCard';
 
 const page = () => {
+  const getUserData=()=>{
+    
+  }
   return (
     <div className='flex min-h-screen w-full flex-col bg-black dark'>
       <TitleBar/>

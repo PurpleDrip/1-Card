@@ -1,11 +1,17 @@
-window.addEventListener("message", (event) => {
-  // Only accept messages from the same page
-  if (event.source !== window) return;
+window.addEventListener('message', event => {
+  if (event.source !== window || !event.data) return;
 
-  if (event.data.type === "NULL_CARD_EXTENSION_CALL") {
-    chrome.runtime.sendMessage({
-      action: "open_ui",
-      payload: event.data.payload
+  if (event.data.type === 'NULL_CARD_REQUEST') {
+    const { nonce } = event.data;
+
+    const password = prompt('Enter your password to sign the request:');
+    if (!password) {
+      window.postMessage({ type: 'NULL_CARD_RESPONSE', error: 'No password provided' }, '*');
+      return;
+    }
+
+    chrome.runtime.sendMessage({ type: 'SIGN_NONCE', nonce, password }, response => {
+      window.postMessage({ type: 'NULL_CARD_RESPONSE', ...response }, '*');
     });
   }
 });

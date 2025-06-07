@@ -4,9 +4,9 @@ pragma solidity ^0.8.24;
 import "../types/structDeclaration.sol";
 
 contract NullCard {
-    mapping(address => bytes16) public Users;              //walletAddress -> NCid
-    mapping(bytes16 => PublicKey) public PublicKeys;       //NCid -> PublicKey
-    mapping(bytes32 => NullCardData[]) public NullCards;   //NCid -> NullCardData[]
+    mapping(address => User) public Users;                      //walletAddress -> NCid,isVerified
+    mapping(bytes16 => PublicKey) public PublicKeys;            //NCid -> PublicKey
+    mapping(bytes16 => string) private userDataStore;           //NCid -> CID (Pinata)
     address public owner;
 
     constructor() {
@@ -18,19 +18,18 @@ contract NullCard {
         _;
     }
 
-    function registerUser(address walletPublicAddress,bytes16 NCid, bytes32 X, bytes32 Y) external OnlyOwner {
-        require(Users[walletPublicAddress] == bytes32(0), "User already registered");
-        Users[walletPublicAddress] = NCid;
+    function getUser(address walletPublicAddress) external view returns (User memory){
+        return Users[walletPublicAddress];
+    }
+
+    function registerUser(address walletPublicAddress,bytes16 NCid, bytes32 X, bytes32 Y) external payable {
+        require(msg.value == 0.00001 ether, "Registration fee is 0.00001 ETH");
+        require(Users[walletPublicAddress].NCid == bytes32(0), "User already registered");
+        Users[walletPublicAddress].NCid = NCid;
         PublicKeys[NCid] = PublicKey({X: X, Y: Y});
     }
 
-    function deleteUser() external OnlyOwner {
-        require(Users[msg.sender] != bytes16(0), "User not registered");
-        delete Users[msg.sender];
-    }
-
-    function addNullCard(NullCardData memory nullCard) external OnlyOwner {
-        require(Users[msg.sender] != bytes16(0), "User not registered");
-        NullCards[Users[msg.sender]].push(nullCard);
+    function getUserInfo(bytes16 NCid) external view returns (string memory){
+        return userDataStore[NCid];
     }
 }

@@ -14,7 +14,7 @@ export const INITIAL_DOCUMENTS: DocumentInfo[] = [
   { id: '3', name: 'Passport', type: 'Passport', status: 'not_uploaded', icon: BookUser },
   { id: '4', name: 'Ration Card', type: 'Ration', status: 'not_uploaded', icon: Archive },
   { id: '5', name: 'Driving License', type: 'Driving License', status: 'pending', icon: FileText, issueDate: '2023-11-01' },
-  { id: '6', name: 'USN Card', type: 'USN', status: 'rejected', icon: Library, issueDate: '2020-07-15' },
+  { id: '6', name: 'Voter ID', type: 'Voter', status: 'rejected', icon: Library, issueDate: '2020-07-15' },
 ];
 
 export const MOCK_ACTIVITIES: ActivityItem[] = [
@@ -34,8 +34,7 @@ export const DOCUMENT_TYPES: { label: string; value: DocumentInfo['type']; icon:
     { label: 'Passport', value: 'Passport', icon: BookUser },
     { label: 'Ration Card', value: 'Ration', icon: Archive },
     { label: 'Driving License', value: 'Driving License', icon: FileText },
-    { label: 'USN Card', value: 'USN', icon: Library },
-    { label: 'Other Document', value: 'Other', icon: FileText },
+    { label: 'Voter ID', value: 'Voter', icon: Library },
 ];
 
 export const ONE_CARD_EXTENSION_LINK = "https://chrome.google.com/webstore"; // Placeholder link

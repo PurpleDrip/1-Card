@@ -8,7 +8,7 @@ const getContract = async (useSigner = false) => {
   const provider = new ethers.BrowserProvider(window.ethereum);
 
   if (useSigner) {
-    const signer = await provider.getSigner(); // triggers MetaMask connect
+    const signer = await provider.getSigner(); 
     return new ethers.Contract(contractAddress, abi, signer);
   }
 

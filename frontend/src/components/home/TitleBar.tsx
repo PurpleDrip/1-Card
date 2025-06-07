@@ -4,7 +4,14 @@ import { useState } from "react";
 import LoginModal from "../modals/LoginModal"
 import RegisterModal from "../modals/RegisterModal";
 
-const TitleBar = () => {
+interface TitleBarProps {
+  setShowModal: (show: boolean) => void;
+  setStages: (stages: any) => void;
+  increementStageNumber: () => void;
+  setStageNumber:(stage:number)=>void
+}
+
+const TitleBar = ({ setShowModal, setStages, increementStageNumber,setStageNumber }: TitleBarProps) => {
 
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
@@ -24,7 +31,7 @@ const TitleBar = () => {
         </section>
 
       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
-      <RegisterModal isOpen={showRegister} onClose={() => setShowRegister(false)} />
+      <RegisterModal isOpen={showRegister} onClose={() => setShowRegister(false) } setShowModal={setShowModal} setStages={setStages} increementStageNumber={increementStageNumber} setStageNumber={setStageNumber}/>
     </>
   )
 }
