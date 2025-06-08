@@ -26,6 +26,7 @@ contract NullCard {
         require(msg.value == 0.00001 ether, "Registration fee is 0.00001 ETH");
         require(Users[walletPublicAddress].NCid == bytes32(0), "User already registered");
         Users[walletPublicAddress].NCid = NCid;
+        Users[walletPublicAddress].isVerified=false;
         PublicKeys[NCid] = PublicKey({X: X, Y: Y});
     }
 

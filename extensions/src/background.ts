@@ -1,6 +1,6 @@
 import { decryptPrivateKey, encryptPrivateKey, generateKeys, signNonce } from "./utils/cryptoUtils";
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessageExternal.addListener((request, _sender, sendResponse) => {
   if (request.type === 'SIGN_NONCE') {
     chrome.storage.local.get(['encryptedPrivateKey','NCid'], async (result) => {
       if (!result.encryptedPrivateKey) {

@@ -13,7 +13,7 @@ import { DOCUMENT_TYPES } from '@/lib/constants';
 import { Label } from '../ui/label';
 import { Paperclip } from 'lucide-react';
 import { ethers, BrowserProvider } from "ethers";
-import { checkForExistingUser } from '@/api/blockchain';
+import { checkForExistingUser, registerUserOnChain } from '@/api/blockchain';
 import { uploadDoc } from '@/api/pinata';
 import { validateDoc } from '@/api/docs';
 import { getPublicKey } from '@/api/extension';
@@ -22,7 +22,6 @@ const stages = [
   { title: "Connecting to Web3 Wallet", message:"An wallet is required to perform transaction and contact the Smart Contract",approxTime:10},
   { title: "Checking if user already exists", message: "Checking blockchain records", approxTime: 60 },
   { title: "Validating Document", message: "Checking authenticity", approxTime: 60 },
-  { title: "Deleting the Document", message: "We want to store zero info about you.", approxTime: 60 },
   { title: "Creating Private Key", message: "Securely storing key", approxTime: 60 },
   { title: "On-Chain Registration", message: "Sending transaction", approxTime: 60 },
   { title: "Requesting Owner to Update Status", message: "Awaiting admin review", approxTime: 60 },
@@ -85,21 +84,6 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
     setShowModal(true);
     
     try {
-      const { publicKey, privateKey } = generateKeys();
-
-      const formData = new FormData();
-      formData.append('password', password);
-      formData.append('publicKey', publicKey);
-      // formData.append('VCid', VCid);
-      // formData.append('address', address);
-      formData.append('documentType', documentType);
-      formData.append('documentFile', selectedFile);
-
-      console.log('FormData contents:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
-
       //step-1 Wallet Connect
       const provider = new  BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -115,30 +99,38 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
         },5000)
       })
       const res1=await checkForExistingUser(signer,walletAddress);
+      if(res1===1){
+        toast({
+          title: 'Registration Failed',
+          description: "An account already exists with this public address",
+          variant: 'destructive',
+        });
+        return;
+      }
       increementStageNumber();
 
-      //step-5 validating the doc
+      //step-3 validating the doc
       const fileName = selectedFile.name;
       const res4=await validateDoc(documentType,selectedFile)
       increementStageNumber();
 
-      //step-6 deleting the doc
-      const res5=await promise();
+      //step-4 creating private key on extension
+      const publicKey=await getPublicKey(password,NCid);
+      console.log("publicKey",publicKey)
       increementStageNumber();
 
-      //step-7 creating private key on extension
-      const res6=await getPublicKey();
+      //step-5 on-chain registration
+      // Step-5 on-chain registration
+      console.log("About to send transaction");
+      const res7=await registerUserOnChain(walletAddress,publicKey as string,NCid,signer);
+      console.log(res7);
       increementStageNumber();
 
-      //step-8 on-chain registration
-      const res7=await promise();
-      increementStageNumber();
-
-      //step-9 requesting owner to update status
+      //step-6 requesting owner to update status
       const res8=await promise();
       increementStageNumber();
 
-      //step-10 appending verified doc to chain
+      //step-7 appending verified doc to chain
       const res9=await promise();
 
       toast({
