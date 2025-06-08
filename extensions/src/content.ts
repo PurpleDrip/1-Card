@@ -1,4 +1,4 @@
-window.addEventListener('message', event => {
+window.addEventListener('message', async (event) => {
   if (event.source !== window || !event.data) return;
 
   if (event.data.type === 'NULL_CARD_REQUEST') {
@@ -10,8 +10,21 @@ window.addEventListener('message', event => {
       return;
     }
 
-    chrome.runtime.sendMessage({ type: 'SIGN_NONCE', nonce, password }, response => {
+    chrome.runtime.sendMessage({ type: 'SIGN_NONCE', nonce, password }, (response) => {
       window.postMessage({ type: 'NULL_CARD_RESPONSE', ...response }, '*');
+    });
+  }
+
+  if (event.data.type === 'GET_PUBLIC_KEY_REQUEST') {
+    const { password, NCid } = event.data;
+
+    if (!password || !NCid) {
+      window.postMessage({ type: 'GET_PUBLIC_KEY_RESPONSE', error: 'Password and NCid are required' }, '*');
+      return;
+    }
+
+    chrome.runtime.sendMessage({ type: 'GET_PUBLIC_KEY', password, NCid }, (response) => {
+      window.postMessage({ type: 'GET_PUBLIC_KEY_RESPONSE', ...response }, '*');
     });
   }
 });

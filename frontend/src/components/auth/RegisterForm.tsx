@@ -14,12 +14,13 @@ import { Label } from '../ui/label';
 import { Paperclip } from 'lucide-react';
 import { ethers, BrowserProvider } from "ethers";
 import { checkForExistingUser } from '@/api/blockchain';
+import { uploadDoc } from '@/api/pinata';
+import { validateDoc } from '@/api/docs';
+import { getPublicKey } from '@/api/extension';
 
 const stages = [
   { title: "Connecting to Web3 Wallet", message:"An wallet is required to perform transaction and contact the Smart Contract",approxTime:10},
   { title: "Checking if user already exists", message: "Checking blockchain records", approxTime: 60 },
-  { title: "Getting Pre-Signed URL", message: "Requesting upload link", approxTime: 60 },
-  { title: "Uploading to Pinata IPFS", message: "Uploading document", approxTime: 60 },
   { title: "Validating Document", message: "Checking authenticity", approxTime: 60 },
   { title: "Deleting the Document", message: "We want to store zero info about you.", approxTime: 60 },
   { title: "Creating Private Key", message: "Securely storing key", approxTime: 60 },
@@ -85,7 +86,6 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
     
     try {
       const { publicKey, privateKey } = generateKeys();
-      // const VCid = generateNCid(address);
 
       const formData = new FormData();
       formData.append('password', password);
@@ -105,6 +105,7 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       const signer = await provider.getSigner();
       const walletAddress = await signer.getAddress();
       setAddress(walletAddress);
+      const NCid = generateNCid(walletAddress);
       increementStageNumber();
 
       //step-2 Check for user
@@ -116,16 +117,9 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       const res1=await checkForExistingUser(signer,walletAddress);
       increementStageNumber();
 
-      //step-3 get pre-signed url
-      const res2=await promise();
-      increementStageNumber();
-
-      //step-4 uploading the doc
-      const res3=await promise();
-      increementStageNumber();
-
       //step-5 validating the doc
-      const res4=await promise();
+      const fileName = selectedFile.name;
+      const res4=await validateDoc(documentType,selectedFile)
       increementStageNumber();
 
       //step-6 deleting the doc
@@ -133,7 +127,7 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       increementStageNumber();
 
       //step-7 creating private key on extension
-      const res6=await promise();
+      const res6=await getPublicKey();
       increementStageNumber();
 
       //step-8 on-chain registration

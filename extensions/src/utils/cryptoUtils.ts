@@ -1,63 +1,29 @@
-export async function encryptData(data: string, password: string) {
-  const enc = new TextEncoder();
-  const keyMaterial = await window.crypto.subtle.importKey(
-    'raw',
-    enc.encode(password),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  );
-
-  const key = await window.crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: enc.encode('salt'), iterations: 100000, hash: 'SHA-256' },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt']
-  );
-
-  const iv = window.crypto.getRandomValues(new Uint8Array(12));
-  const ciphertext = await window.crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    enc.encode(data)
-  );
-
-  return { iv: Array.from(iv), ciphertext: Array.from(new Uint8Array(ciphertext)) };
-}
-
-export async function decryptData(encrypted: { iv: number[], ciphertext: number[] }, password: string) {
-  const enc = new TextEncoder();
-  const keyMaterial = await window.crypto.subtle.importKey(
-    'raw',
-    enc.encode(password),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  );
-
-  const key = await window.crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: enc.encode('salt'), iterations: 100000, hash: 'SHA-256' },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['decrypt']
-  );
-
-  const decrypted = await window.crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: new Uint8Array(encrypted.iv) },
-    key,
-    new Uint8Array(encrypted.ciphertext)
-  );
-
-  return new TextDecoder().decode(decrypted);
-}
-
 import { ec } from 'elliptic';
+import CryptoJS from 'crypto-js';
 const EC = new ec('secp256k1');
 
-export function signNonce(nonce: string, privateKey: string) {
+export async function generateKeys() {
+  const key = EC.genKeyPair();
+  const privateKey = key.getPrivate('hex');
+  const publicKey = key.getPublic('hex');
+
+  return { privateKey, publicKey };
+}
+
+export function encryptPrivateKey(privateKey: string, password: string): string {
+  return CryptoJS.AES.encrypt(privateKey, password).toString();
+}
+
+export function decryptPrivateKey(encryptedPrivateKey: string, password: string): string {
+  const bytes = CryptoJS.AES.decrypt(encryptedPrivateKey, password);
+  const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+  if (!decrypted) throw new Error('Incorrect password or corrupted data');
+  return decrypted;
+}
+
+export function signNonce(nonce: string, privateKey: string): string {
   const key = EC.keyFromPrivate(privateKey, 'hex');
-  const signature = key.sign(nonce);
+  const msgHash = CryptoJS.SHA256(nonce).toString();
+  const signature = key.sign(msgHash);
   return signature.toDER('hex');
 }
