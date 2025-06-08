@@ -13,3 +13,11 @@ export const validateDoc=(docType:string,file:File)=>{
         withCredentials:true,
     })
 }
+
+export const verifyUser=(address:string)=>{
+    return axiosInstance.post(":5000/api/v1/auth/validate-user",address)
+}
+
+export const appendCID=(address:string)=>{
+    return axiosInstance.post(":5000/api/v1/auth/append-user",address)
+}

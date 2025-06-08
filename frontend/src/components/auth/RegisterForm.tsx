@@ -15,7 +15,7 @@ import { Paperclip } from 'lucide-react';
 import { ethers, BrowserProvider } from "ethers";
 import { checkForExistingUser, registerUserOnChain } from '@/api/blockchain';
 import { uploadDoc } from '@/api/pinata';
-import { validateDoc } from '@/api/docs';
+import { appendCID, validateDoc, verifyUser } from '@/api/docs';
 import { getPublicKey } from '@/api/extension';
 
 const stages = [
@@ -119,19 +119,17 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       console.log("publicKey",publicKey)
       increementStageNumber();
 
-      //step-5 on-chain registration
       // Step-5 on-chain registration
-      console.log("About to send transaction");
       const res7=await registerUserOnChain(walletAddress,publicKey as string,NCid,signer);
       console.log(res7);
       increementStageNumber();
 
       //step-6 requesting owner to update status
-      // const res8=await verifyUser(NCid);
+      const res8=await verifyUser(walletAddress);
       increementStageNumber();
 
       //step-7 appending verified doc to chain
-      const res9=await promise();
+      const res9=await appendCID(walletAddress);
 
       toast({
         title: 'Data Prepared',
