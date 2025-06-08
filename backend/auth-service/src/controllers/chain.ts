@@ -1,21 +1,58 @@
-import { ethers } from "ethers";
+import redis from "config/redis";
 import contract from "../config/contract";
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 
-export const appendUserToChain = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const { walletPublicAddress,NCid } = res.locals.user;
-    const  publicKey  = req.body.publicKey;
-    const X="0x" + publicKey.slice(2, 66);
-    const Y="0x" + publicKey.slice(66, 130);
+export const verifyUser=async(req:Request,res:Response)=>{
+    const {address}=req.body;
 
     try{
-        const result=await contract.registerUser(walletPublicAddress,ethers.hexlify(NCid),ethers.hexlify(X),ethers.hexlify(Y));
-        res.locals.hash=result.hash;
-        next();
+        const existingUser=await contract.getUser(address)
+        if(!existingUser){
+            res.status(400).json({
+                success:false,
+                message:"No user exists with this Wallet Address."
+            });
+            return;
+        }
 
+        await contract.verifyUser(address);
+
+        res.status(200).json({
+            success:true,
+            message:"Successfully verified User."
+        })
+        return
     }catch(err){
-        console.log("Error appending user to chain:", err);
-        res.status(500).json({ message: "Failed to append user to chain" });
+        console.log(err);
+        res.status(500).json({
+            success:false,
+            message:err
+        })
+        return;
+    }
+}
+
+export const appendCID=async (req:Request,res:Response)=>{
+    const {address}=req.body;
+
+    try{
+        const existingUser=await contract.getUser(address)
+        if(!existingUser){
+            res.status(400).json({
+                success:false,
+                message:"No user exists with this Wallet Address."
+            });
+            return;
+        }
+
+        const cid=await redis.get(address);
+        await contract.appendData(address,cid)
+    }catch(err){
+        console.log(err);
+        res.status(500).json({
+            success:false,
+            message:err
+        })
         return;
     }
 }

@@ -99,7 +99,7 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
         },5000)
       })
       const res1=await checkForExistingUser(signer,walletAddress);
-      if(res1===1){
+      if(res1){
         toast({
           title: 'Registration Failed',
           description: "An account already exists with this public address",
@@ -127,7 +127,7 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       increementStageNumber();
 
       //step-6 requesting owner to update status
-      const res8=await promise();
+      // const res8=await verifyUser(NCid);
       increementStageNumber();
 
       //step-7 appending verified doc to chain

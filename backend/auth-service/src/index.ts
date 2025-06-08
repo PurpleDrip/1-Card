@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
-import registerRoute from "./routes/registerRoute"
+import authRoute from "./routes/authRoute"
 import docsRoute from "./routes/docsRoute"
 
 dotenv.config();
@@ -18,7 +18,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 
-app.use("/api/v1/auth",registerRoute);
+app.use("/api/v1/auth",authRoute);
 app.use("/api/v1/docs",docsRoute)
 
 app.listen(process.env.PORT as string, () => {

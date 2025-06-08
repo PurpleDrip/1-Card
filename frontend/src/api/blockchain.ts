@@ -12,7 +12,7 @@ export const checkForExistingUser = async (signer: any, address: string) => {
 
     if (user.NCid === '0x00000000000000000000000000000000') {
       console.log('✅ No user found at this address');
-      return 1;
+      return null;
     }
 
     console.log('❌ User already exists:', user);
@@ -29,7 +29,7 @@ export const checkForExistingUser = async (signer: any, address: string) => {
 
 export const registerUserOnChain=async (address:string,publicKey:string,NCid:string,signer:any)=>{
     const contract = new Contract(CONTRACT_ADDRESS, abi, signer);
-    const valueInMatic = parseEther("0.00001");
+    const valueInMatic = parseEther("0.001");
     const X="0x" + publicKey.slice(2, 66);
     const Y="0x" + publicKey.slice(66, 130);
     const tx=await contract.registerUser(address,ethers.hexlify(NCid),ethers.hexlify(X),ethers.hexlify(Y),{
