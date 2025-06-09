@@ -3,6 +3,8 @@ import { Raleway } from 'next/font/google';
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/toaster";
+import { ReduxProvider } from '@/components/providers/redux-provider';
+import AuthWrapper from "@/components/providers/creds-provider";
 
 const raleway = Raleway({
   subsets: ['latin'],
@@ -24,10 +26,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${raleway.className} antialiased`}
-      >
-        {children}
-        <Toaster />
+        className={`${raleway.className} antialiased`}> 
+        <ReduxProvider>
+          <AuthWrapper>
+            {children}
+            <Toaster />
+          </AuthWrapper>
+        </ReduxProvider>
       </body>
     </html>
   );

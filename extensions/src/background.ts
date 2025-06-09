@@ -56,20 +56,20 @@ chrome.runtime.onMessageExternal.addListener((request, _sender, sendResponse) =>
   }
 
   if(request.type === "GET_CREDS"){
-        chrome.storage.local.get(['NCid,address'], async (result) => {
-      if (!result.NCid || !result.address) {
-        sendResponse({ error: 'No account found' });
-        return;
-      }
+        chrome.storage.local.get(["NCid","address"], async (result) => {
+        if (!result.NCid || !result.address) {
+          sendResponse({ error: 'No account found' });
+          return;
+        }
 
       try {
-        const {NCid,address}=result;
-        sendResponse({ address,NCid });
+        sendResponse({ address:result.address,NCid:result.NCid });
 
       } catch (err) {
         console.error(err);
         sendResponse({ error: 'Failed to fetch CREDS' });
       }
     });
+    return true;
   }
 });
