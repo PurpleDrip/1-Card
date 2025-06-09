@@ -27,10 +27,10 @@ chrome.runtime.onMessageExternal.addListener((request, _sender, sendResponse) =>
   }
 
   if (request.type === 'GET_PUBLIC_KEY') {
-    const { password, NCid } = request;
+    const { password, NCid,address } = request;
 
-    if (!password || !NCid) {
-      sendResponse({ error: 'Password and NCid are required' });
+    if (!password || !NCid || !address) {
+      sendResponse({ error: 'Password, Address and NCid are required' });
       return;
     }
 
@@ -47,7 +47,8 @@ chrome.runtime.onMessageExternal.addListener((request, _sender, sendResponse) =>
 
         chrome.storage.local.set({
           encryptedPrivateKey,
-          NCid
+          NCid,
+          address
         }, () => {
           sendResponse({ publicKey });
         });

@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 
 import authRoute from "./routes/authRoute"
 import docsRoute from "./routes/docsRoute"
+import extensionRoute from "./routes/extensionRoute"
 
 dotenv.config();
 const app=e();
@@ -20,6 +21,7 @@ app.use(cors({
 
 app.use("/api/v1/auth",authRoute);
 app.use("/api/v1/docs",docsRoute)
+app.use("/api/v1/extension",extensionRoute)
 
 app.listen(process.env.PORT as string, () => {
   console.log('Server is running on port 5000');

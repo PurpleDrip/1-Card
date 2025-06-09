@@ -93,11 +93,6 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       increementStageNumber();
 
       //step-2 Check for user
-      const promise=()=>new Promise((res,rej)=>{
-        setTimeout(()=>{
-          res("success");
-        },5000)
-      })
       const res1=await checkForExistingUser(signer,walletAddress);
       if(res1){
         toast({
@@ -110,7 +105,6 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       increementStageNumber();
 
       //step-3 validating the doc
-      const fileName = selectedFile.name;
       const res4=await validateDoc(documentType,selectedFile)
       increementStageNumber();
 

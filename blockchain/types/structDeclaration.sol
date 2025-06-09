@@ -39,3 +39,22 @@ struct UserDataStore{
     ActivityLogs[] activityLogs;
     UsageLogs[] usageLogs;
 }
+
+// {
+//     "nullCardData":{{
+//         "docType":"AADHAR",
+//         "verifiedBy":"UIDAI",
+//         "verifiedAt":12-10-2004,
+//         },{
+//             "docType":"PANCARD",
+//             "verifiedBy":"UIDAI-X",
+//             "verifiedAt":12-11-2004,     
+//     }},
+//     "activityLogs":{{
+//         "activityName":"Verifed Aadhar",
+//     }},
+//     "usageLogs":{{
+//         "verifiedAt":"XYZ Company",
+//         "verificationTime":12-11-2000,
+//     }}
+// }

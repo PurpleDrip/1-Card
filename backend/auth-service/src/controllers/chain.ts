@@ -1,6 +1,7 @@
 import redis from "config/redis";
 import contract from "../config/contract";
 import { Request, Response } from "express";
+import { ethers } from "ethers";
 
 export const verifyUser=async(req:Request,res:Response)=>{
     const {address}=req.body;
@@ -45,8 +46,10 @@ export const appendCID=async (req:Request,res:Response)=>{
             return;
         }
 
-        const cid=await redis.get(address);
-        await contract.appendData(address,cid)
+        const NCid=existingUser.NCid;
+
+        const cid=await redis.get(NCid);
+        await contract.appendData(ethers.hexlify(NCid),cid)
     }catch(err){
         console.log(err);
         res.status(500).json({

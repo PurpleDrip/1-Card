@@ -1,6 +1,23 @@
 import { ShieldUser } from "lucide-react"
 
-export const VerifiedDoc = () => {
+  type DocType = "AADHAR" | "PASSPORT" | "VOTER" | "PANCARD" | "RATION" | "DRIVING_LICENSE";
+  interface UserData{
+      nullCardData:[{
+        docType: DocType,
+        verifiedBy:string,
+        verifiedAt:string
+      }],
+      activityLogs: [{
+        activityName:string,
+        activityTime:string
+      }],
+      usageLogs: [{
+        verifier:string,
+        verificationTime:string
+      }]
+  }
+
+export const VerifiedDoc = ({data}:{data?:UserData}) => {
   const verifiedDocs = [
   { id: "1", type: "Aadhar" },
   { id: "2", type: "Passport" },
