@@ -1,7 +1,6 @@
 import redis from "../config/redis";
 import contract from "../config/contract";
 import { Request, Response } from "express";
-import { ethers } from "ethers";
 
 export const verifyUser=async(req:Request,res:Response)=>{
     const {address}=req.body;
@@ -16,7 +15,8 @@ export const verifyUser=async(req:Request,res:Response)=>{
             return;
         }
 
-        await contract.verifyUser(address);
+        const tx=await contract.verifyUser(address);
+        await tx.wait();
 
         res.status(200).json({
             success:true,
@@ -47,7 +47,8 @@ export const appendCID=async (req:Request,res:Response)=>{
         }
         const NCid=existingUser[0];
         const cid=await redis.get(NCid.toString());
-        await contract.appendData(address,cid)
+        const tx=await contract.appendData(address,cid)
+        await tx.wait();
 
         res.status(201).json({
             success:true,
@@ -59,6 +60,29 @@ export const appendCID=async (req:Request,res:Response)=>{
         res.status(500).json({
             success:false,
             message:err
+        })
+        return;
+    }
+}
+
+export const getPublicKey=async(req:Request,res:Response)=>{
+    const {NCid}=req.body;
+
+    try{
+        const result=await contract.getPublicKey(NCid)
+
+        console.log(result);
+        res.status(200).json({
+            success:true,
+            message:"Retrieved Public key",
+            data:result
+        })
+        return;
+    }catch(err){
+        console.log(err);
+        res.status(500).json({
+            success:false,
+            message:"Internal server error."
         })
         return;
     }

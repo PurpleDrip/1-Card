@@ -116,8 +116,8 @@ export const validateDoc = [
         }
       }else{
         userData={
-          nullCardData:newNullCardData,
-          activityLogs:newActivityLog,
+          nullCardData:[newNullCardData],
+          activityLogs:[newActivityLog],
           usageLogs:[]
         }
       }

@@ -8,19 +8,19 @@ const App = () => {
 
   type DocType = "AADHAR" | "PASSPORT" | "VOTER" | "PANCARD" | "RATION" | "DRIVING_LICENSE";
   interface UserData{
-      nullCardData:[{
+      nullCardData:{
         docType: DocType,
         verifiedBy:string,
         verifiedAt:string
-      }],
-      activityLogs: [{
+      }[];
+      activityLogs: {
         activityName:string,
         activityTime:string
-      }],
-      usageLogs: [{
+      }[];
+      usageLogs: {
         verifier:string,
         verificationTime:string
-      }]
+      }[];
   }
 
   const [data, setData] = useState<UserData>();
@@ -36,10 +36,10 @@ const App = () => {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ NCid })
+          body: JSON.stringify({ NCid:storedNCid })
         });
         const res=await response.json();
-        setData(res)
+        setData(res.data)
         setNCid(storedNCid);
         setAddress(storedAddress)
       });

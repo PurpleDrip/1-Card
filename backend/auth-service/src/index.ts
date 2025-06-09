@@ -13,7 +13,7 @@ const app=e();
 app.use(e.json());
 app.use(e.urlencoded({ extended: true }));
 app.use(cors({
-  origin: process.env.FRONTEND_URL as string,
+  origin:["http://localhost:3000","http://localhost:3001"],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],

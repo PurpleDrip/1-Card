@@ -2,11 +2,10 @@ window.addEventListener('message', async (event) => {
   if (event.source !== window || !event.data) return;
 
   if (event.data.type === 'NULL_CARD_REQUEST') {
-    const { nonce } = event.data;
+    const { nonce, password } = event.data;
 
-    const password = prompt('Enter your password to sign the request:');
-    if (!password) {
-      window.postMessage({ type: 'NULL_CARD_RESPONSE', error: 'No password provided' }, '*');
+    if (!nonce || !password) {
+      window.postMessage({ type: 'NULL_CARD_RESPONSE', error: 'Nonce and Password are required' }, '*');
       return;
     }
 
@@ -26,5 +25,11 @@ window.addEventListener('message', async (event) => {
     chrome.runtime.sendMessage({ type: 'GET_PUBLIC_KEY', password, NCid, address }, (response) => {
       window.postMessage({ type: 'GET_PUBLIC_KEY_RESPONSE', ...response }, '*');
     });
+  }
+
+  if(event.data.type==="CHECK_SESSION"){
+    chrome.runtime.sendMessage({type:"GET_CREDS"},(response)=>{
+      window.postMessage({type:"GET_CREDS_RESPONSE",...response},"http://localhost:3000")
+    })
   }
 });

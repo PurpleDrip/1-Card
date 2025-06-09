@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 
 export const fetchUserData=async(req:Request,res:Response)=>{
     const {NCid}=req.body;
+    console.log("NCid",NCid)
 
     try{
         const CIDs=await contract.getUserInfo(NCid);
@@ -13,6 +14,7 @@ export const fetchUserData=async(req:Request,res:Response)=>{
         throw new Error(`Failed to fetch: ${response.status}`);
         }
         const existingData = await response.json();
+        console.log(existingData)
 
         res.status(200).json({
             success:true,
