@@ -1,4 +1,4 @@
-import contract from "config/contract";
+import contract from "../config/contract";
 import { Request, Response } from "express";
 
 export const fetchUserData=async(req:Request,res:Response)=>{

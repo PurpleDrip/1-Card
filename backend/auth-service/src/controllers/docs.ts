@@ -4,10 +4,10 @@ import fs from "fs";
 import multer from "multer";
 import path from "path";
 import os from "os";
-import { validateAadhar, validateDrivingLicense, validatePancard, validatePassport, validateRation, validateVoter } from "services/validate";
-import contract from "config/contract";
-import pinata from "config/pinata";
-import redis from "config/redis";
+import { validateAadhar, validateDrivingLicense, validatePancard, validatePassport, validateRation, validateVoter } from "../services/validate";
+import contract from "../config/contract";
+import pinata from "../config/pinata";
+import redis from "../config/redis";
 
 const TTL=300;
 
@@ -16,7 +16,7 @@ const upload = multer({ dest: os.tmpdir() });
 export const validateDoc = [
   upload.single("documentFile"), 
   async (req: Request, res: Response): Promise<void> => {
-    const { docType,NCid} = req.body;
+    const { docType,NCid,newUser} = req.body;
     const file = req.file;
 
     if (!docType || !file) {
@@ -97,7 +97,7 @@ export const validateDoc = [
 
       let userData;
 
-      if(NCid){
+      if(!newUser){
         try {
           const existingCIDs=await contract.getUserInfo(NCid);
           const response = await fetch(`https://gateway.pinata.cloud/ipfs/${existingCIDs[existingCIDs.length - 1]}`);

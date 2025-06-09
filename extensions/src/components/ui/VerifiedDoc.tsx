@@ -31,6 +31,8 @@ export const VerifiedDoc = ({data}:{data?:UserData}) => {
   { id: "5", type: "Driving" },
 ];
 
+console.log(data)
+
   return (
     <>
       <h1 className="text-white text-[20px] underline underline-offset-8 raleway-md">Verified Docs</h1>

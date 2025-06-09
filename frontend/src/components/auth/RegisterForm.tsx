@@ -105,11 +105,11 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       increementStageNumber();
 
       //step-3 validating the doc
-      const res4=await validateDoc(documentType,selectedFile)
+      const res4=await validateDoc(documentType,selectedFile,NCid)
       increementStageNumber();
 
       //step-4 creating private key on extension
-      const publicKey=await getPublicKey(password,NCid);
+      const publicKey=await getPublicKey(password,NCid,walletAddress);
       console.log("publicKey",publicKey)
       increementStageNumber();
 
@@ -126,8 +126,8 @@ export default function RegisterForm({setShowModal,setStages,increementStageNumb
       const res9=await appendCID(walletAddress);
 
       toast({
-        title: 'Data Prepared',
-        description: 'FormData has been prepared and logged to console.',
+        title: 'Registration Successful',
+        description: 'Your Document is stored on-chain.',
       });
 
     } catch (err: any) {

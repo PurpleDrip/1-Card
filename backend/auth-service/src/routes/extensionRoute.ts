@@ -1,4 +1,4 @@
-import { fetchUserData } from "controllers/extension";
+import { fetchUserData } from "../controllers/extension";
 import e from "express";
 
 const router = e.Router();

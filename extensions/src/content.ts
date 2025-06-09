@@ -16,14 +16,14 @@ window.addEventListener('message', async (event) => {
   }
 
   if (event.data.type === 'GET_PUBLIC_KEY_REQUEST') {
-    const { password, NCid } = event.data;
+    const { password, NCid, address } = event.data;
 
-    if (!password || !NCid) {
-      window.postMessage({ type: 'GET_PUBLIC_KEY_RESPONSE', error: 'Password and NCid are required' }, '*');
+    if (!password || !NCid || !address) {
+      window.postMessage({ type: 'GET_PUBLIC_KEY_RESPONSE', error: 'Password, Address, and NCid are required' }, '*');
       return;
     }
 
-    chrome.runtime.sendMessage({ type: 'GET_PUBLIC_KEY', password, NCid }, (response) => {
+    chrome.runtime.sendMessage({ type: 'GET_PUBLIC_KEY', password, NCid, address }, (response) => {
       window.postMessage({ type: 'GET_PUBLIC_KEY_RESPONSE', ...response }, '*');
     });
   }

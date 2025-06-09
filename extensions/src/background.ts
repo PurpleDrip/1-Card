@@ -8,22 +8,17 @@ chrome.runtime.onMessageExternal.addListener((request, _sender, sendResponse) =>
         return;
       }
 
-      const password = prompt('Enter your password to unlock:');
-      if (!password) {
-        sendResponse({ error: 'No password provided' });
-        return;
-      }
-
       try {
-        const privateKey = decryptPrivateKey(result.encryptedPrivateKey, password);
+        const privateKey = decryptPrivateKey(result.encryptedPrivateKey, request.password);
         const signature = signNonce(request.nonce, privateKey);
         const NCid = result.NCid || 'unknown';
         sendResponse({ NCid, signature });
       } catch (err) {
+        console.error(err);
         sendResponse({ error: 'Failed to sign nonce' });
       }
     });
-    return true;
+    return true; 
   }
 
   if (request.type === 'GET_PUBLIC_KEY') {

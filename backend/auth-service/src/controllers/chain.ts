@@ -1,4 +1,4 @@
-import redis from "config/redis";
+import redis from "../config/redis";
 import contract from "../config/contract";
 import { Request, Response } from "express";
 import { ethers } from "ethers";
@@ -45,11 +45,15 @@ export const appendCID=async (req:Request,res:Response)=>{
             });
             return;
         }
+        const NCid=existingUser[0];
+        const cid=await redis.get(NCid.toString());
+        await contract.appendData(address,cid)
 
-        const NCid=existingUser.NCid;
-
-        const cid=await redis.get(NCid);
-        await contract.appendData(ethers.hexlify(NCid),cid)
+        res.status(201).json({
+            success:true,
+            message:"Successfully append the CID to the chain."
+        })
+        return;
     }catch(err){
         console.log(err);
         res.status(500).json({

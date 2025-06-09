@@ -32,7 +32,7 @@ export const registerUserOnChain=async (address:string,publicKey:string,NCid:str
     const valueInMatic = parseEther("0.001");
     const X="0x" + publicKey.slice(2, 66);
     const Y="0x" + publicKey.slice(66, 130);
-    const tx=await contract.registerUser(address,ethers.hexlify(NCid),ethers.hexlify(X),ethers.hexlify(Y),{
+    const tx=await contract.registerUser(address,NCid,X,Y,{
       value:valueInMatic
     });
     const receipt = await tx.wait();

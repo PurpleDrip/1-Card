@@ -1,4 +1,4 @@
-export const getPublicKey=async (password:string,NCid:string)=>{
+export const getPublicKey=async (password:string,NCid:string,address:string)=>{
     return new Promise((resolve, reject) => {
         const extensionId="dmpahdppkfaedpalinlpllhebloopneh";
             if (!window.chrome?.runtime?.sendMessage) {
@@ -8,7 +8,7 @@ export const getPublicKey=async (password:string,NCid:string)=>{
 
     window.chrome.runtime.sendMessage(
         extensionId,
-      { type: 'GET_PUBLIC_KEY', password, NCid },
+      { type: 'GET_PUBLIC_KEY', password, NCid, address },
       (response) => {
         if (chrome.runtime.lastError) {
             console.log(chrome.runtime.lastError.message)
